@@ -20,19 +20,20 @@ table#wrapper {
 
 iframe {
 	border: 0;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+/* 	position: fixed; */
+/* 	top: 0; */
+/* 	left: 0; */
+/* 	right: 0; */
+/* 	bottom: 0; */
 	width: 100%;
 	height: 100%
 }
 </style>
 <script type="text/javascript">
+	var editor = 'https://www.draw.io/?embed=1&spin=1&proto=json';
 	//var editor = 'https://www.draw.io/?embed=1&ui=min&spin=1&proto=json&configure=1';
 	// clibs=.... 用來載入自定的圖示。
-	var editor = 'https://www.draw.io/?embed=1&proto=json&configure=1&clibs=Uhttps://weichou99.github.io/ZenLibrary.xml';
+	//var editor = 'https://www.draw.io/?embed=1&proto=json&configure=1&clibs=Uhttps://weichou99.github.io/ZenLibrary.xml';
 	var initial = null;
 	var name = null;
 
@@ -154,6 +155,62 @@ iframe {
 			document.getElementById('diagram').innerHTML = initial;
 		}
 	};
+	
+	
+	function createNew() {
+		var iframe = document.createElement('iframe');
+		iframe.setAttribute('frameborder', '0');
+
+		var close = function() {
+			window.removeEventListener('message', receive);
+			document.getElementById('drawioWorkspace').removeChild(iframe);
+		};
+
+
+		var receive = function(evt) {
+			if (evt.data.length > 0) {
+				var msg = JSON.parse(evt.data);
+				console.log("receive function msg.event: %s", msg.event);
+				console.log("receive function msg.data: %s", msg.data);
+				console.log("receive function msg.xml: %s", msg.xml);
+				// If configure=1 URL parameter is used the application
+				// waits for this message. For configuration options see
+				// https://desk.draw.io/support/solutions/articles/16000058316
+				if (msg.event == 'configure') {
+					// Configuration example
+					iframe.contentWindow.postMessage(JSON.stringify({
+						action : 'configure'
+					}), '*');
+				} else if (msg.event == 'init') {
+						iframe.contentWindow.postMessage(JSON.stringify({
+							action : 'load',
+							xml : null
+						}), '*');
+// 					}
+				} else if (msg.event == 'export') {
+					// Extracts SVG DOM from data URI to enable links
+					var svg = atob(msg.data
+							.substring(msg.data.indexOf(',') + 1));
+					document.getElementById('displaySvg').innerHTML = svg;
+					close();
+				} else if (msg.event == 'autosave') {
+				} else if (msg.event == 'save') {
+					iframe.contentWindow.postMessage(JSON.stringify({
+						action : 'export',
+						format : 'xmlsvg',
+						xml : msg.xml,
+						spin : 'Updating page'
+					}), '*');
+				} else if (msg.event == 'exit') {
+					close();
+				}
+			}
+		};
+
+		window.addEventListener('message', receive);
+		iframe.setAttribute('src', editor);
+		document.getElementById('drawioWorkspace').appendChild(iframe);
+	};
 
 	//window.addEventListener('hashchange', start);
 </script>
@@ -161,8 +218,13 @@ iframe {
 <body onload="load();">
 	<table id="wrapper">
 		<tr>
-			<td id="diagram" title="Double click to edit" onclick="edit(this);"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="121px" height="121px" viewBox="-0.5 -0.5 121 121" content="&lt;mxfile modified=&quot;2019-09-03T05:47:28.959Z&quot; host=&quot;&quot; agent=&quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/10.9.5 Chrome/73.0.3683.121 Electron/5.0.6 Safari/537.36&quot; etag=&quot;_gHaU5mT5UQ-RllsnA-v&quot; version=&quot;10.9.5&quot; type=&quot;device&quot;&gt;&lt;diagram name=&quot;Page-1&quot; id=&quot;f1b7ffb7-ca1e-a977-7cf5-a751b3c06c05&quot;&gt;jZNNb4MwDIZ/DcdVhWztetxY12napko97Dil4ELUBKNgWuivX4CED1WVmgvJ4484r43HQlVtNM/Tb4xBesE8rjz25gWBPw8ezachdUeeVssOJFrE1mkAO3EBF2lpKWIoJo6EKEnkUxhhlkFEE8a1xvPU7YByemvOE7gCu4jLa/orYko7+hwsBv4BIkndzf5i1Vn2PDomGsvM3ucF7NCuzqy4y2UfWqQ8xvMIsbXHQo1I3U5VIchGWydbF/d+w9rXrSGjuwJKeWFLUlCFn+qPb7Gufh4WNs2JyxLcO9pqqXYKnUCTMIJ98T3ILRaCBGbGtEciVB57dQ4vUiSNgTA3tCCNx15TvyEpz5ucqkqaWZopjI5lPmsPIipmwvR4006NDQ5Rom6LYGG7jGU0Rab2sMlrn2CqgOqmOH4vuRllQAWka+NyHnruu06l4347yO2cJX3soLXZWLndcWhraxv9O2z9Dw==&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(255, 255, 255);"><defs/><g><rect x="0" y="0" width="120" height="120" fill="#ffffff" stroke="#cccccc" pointer-events="none"/><path d="M 0 0 L 120 120 M 120 0 L 0 120" fill="none" stroke="#cccccc" stroke-miterlimit="10" pointer-events="none"/></g></svg></td>
+			<td id="diagram" title="Double click to edit" onclick="edit(this);">
+				<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="121px" height="121px" viewBox="-0.5 -0.5 121 121" content="&lt;mxfile modified=&quot;2019-09-03T05:47:28.959Z&quot; host=&quot;&quot; agent=&quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/10.9.5 Chrome/73.0.3683.121 Electron/5.0.6 Safari/537.36&quot; etag=&quot;_gHaU5mT5UQ-RllsnA-v&quot; version=&quot;10.9.5&quot; type=&quot;device&quot;&gt;&lt;diagram name=&quot;Page-1&quot; id=&quot;f1b7ffb7-ca1e-a977-7cf5-a751b3c06c05&quot;&gt;jZNNb4MwDIZ/DcdVhWztetxY12napko97Dil4ELUBKNgWuivX4CED1WVmgvJ4484r43HQlVtNM/Tb4xBesE8rjz25gWBPw8ezachdUeeVssOJFrE1mkAO3EBF2lpKWIoJo6EKEnkUxhhlkFEE8a1xvPU7YByemvOE7gCu4jLa/orYko7+hwsBv4BIkndzf5i1Vn2PDomGsvM3ucF7NCuzqy4y2UfWqQ8xvMIsbXHQo1I3U5VIchGWydbF/d+w9rXrSGjuwJKeWFLUlCFn+qPb7Gufh4WNs2JyxLcO9pqqXYKnUCTMIJ98T3ILRaCBGbGtEciVB57dQ4vUiSNgTA3tCCNx15TvyEpz5ucqkqaWZopjI5lPmsPIipmwvR4006NDQ5Rom6LYGG7jGU0Rab2sMlrn2CqgOqmOH4vuRllQAWka+NyHnruu06l4347yO2cJX3soLXZWLndcWhraxv9O2z9Dw==&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(255, 255, 255);"><defs/><g><rect x="0" y="0" width="120" height="120" fill="#ffffff" stroke="#cccccc" pointer-events="none"/><path d="M 0 0 L 120 120 M 120 0 L 0 120" fill="none" stroke="#cccccc" stroke-miterlimit="10" pointer-events="none"/></g></svg>
+			</td>
 		</tr>
 	</table>
+	<div id="displaySvg" onclick="edit(this);"></div>
+	<button type="button" onclick="createNew();">New</button>
+	<div id="drawioWorkspace" style="height: 600px"></div>
 </body>
 </html>
