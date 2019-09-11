@@ -16,7 +16,7 @@
 								
 
 		
-			$.get('diagram/rectangle.drawio', function( data ) {
+			$.get('diagram/layout1.drawio', function( data ) {
 				// 從server取得drawio的檔案內容。
 				console.log('data:',data);
 				console.log('');
@@ -39,43 +39,43 @@
 				div.style.height = '100%';
 				div.style.position = 'relative';
 				document.body.appendChild(div);
-				graph = new mxGraph(div);
-				graph.setHtmlLabels(true);
-				console.log('graph:',graph);
-				console.log('');
-				
-				graph.resetViewOnRootChange = false;
-				graph.foldingEnabled = false;
-				// NOTE: Tooltips require CSS
-				graph.setTooltips(false);
-				graph.setEnabled(false);
-				
-				// Loads the stylesheet
+								graph = new mxGraph(div);
+								graph.setHtmlLabels(true);
+								console.log('graph:', graph);
+								console.log('');
+
+								graph.resetViewOnRootChange = false;
+								graph.foldingEnabled = false;
+								// NOTE: Tooltips require CSS
+								graph.setTooltips(false);
+								graph.setEnabled(false);
+
+								// Loads the stylesheet
 				if (stylesheet != null)
 				{
-					var xmlDoc = mxUtils.parseXml(stylesheet);
-					var dec = new mxCodec(xmlDoc);
+									var xmlDoc = mxUtils.parseXml(stylesheet);
+									var dec = new mxCodec(xmlDoc);
 					dec.decode(xmlDoc.documentElement, graph.getStylesheet());
-				}
+								}
 				var xmlDoc = mxUtils.parseXml(decompressDiagram);
-				var codec = new mxCodec(xmlDoc);
+								var codec = new mxCodec(xmlDoc);
 				codec.decode(codec.document.documentElement, graph.getModel());
-				console.log('graph:',graph);
-				console.log('');
-				graph.maxFitScale = 1;
-				graph.fit();
-				graph.center(true, false);
-				
+								console.log('graph:', graph);
+								console.log('');
+								graph.maxFitScale = 1;
+								graph.fit();
+								graph.center(true, false);
+
 				window.addEventListener('resize', function()
 				{
-					graph.fit();
-					graph.center(true, false);
-				});
-			});
-			
+									graph.fit();
+									graph.center(true, false);
+								});
+							});
+
 			
 		}
-		
+
 		function edit(url)
 		{
 			var border = 0;
@@ -89,16 +89,16 @@
 			{
 				iframe.setAttribute('frameborder', '0');
 			}
-			 
+
 			var resize = function()
 			{
 				iframe.setAttribute('width', document.body.clientWidth - 2 * border);
 				iframe.setAttribute('height', document.body.clientHeight - 2 * border);
 			};
-			 
+
 			window.addEventListener('resize', resize);
 			resize();
-			 
+
 			var receive = function(evt)
 			{
 				if (evt.data == 'ready')
@@ -116,7 +116,7 @@
 						codec.decode(codec.document.documentElement, graph.getModel());
 						graph.fit();
 						graph.center(true, false);
-						
+
 						var data = encodeURIComponent(evt.data);
 						var idx = doc.indexOf('<div ' + 'id="mxfile"');
 						var newdoc = doc.substring(0, idx) + '\n<div ' + 'id="mxfile" style="display:none;">' +
@@ -126,18 +126,18 @@
 						
 						save(newdoc, location.pathname.substring(location.pathname.lastIndexOf("/") + 1));
 					}
-					
+
 					window.removeEventListener('resize', resize);
 					window.removeEventListener('message', receive);
 					document.body.removeChild(iframe);
 				}
 			};
-			
+
 			window.addEventListener('message', receive);
 			iframe.setAttribute('src', DRAW_IFRAME_URL);
 			document.body.appendChild(iframe);
 		}
-		
+
 		function save(data, filename)
 		{
 			try
@@ -158,7 +158,7 @@
 				else
 				{
 					var a = document.createElement('a');
-	
+
 					// NOTE: URL.revokeObjectURL(a.href) after click breaks download in FF
 					a.href = URL.createObjectURL(new Blob([data], {type: 'application/octet-stream'}));
 					a.download = filename;
